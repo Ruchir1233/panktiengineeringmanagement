@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updateCustomer, deleteCustomer } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CustomerCardProps {
   customer: Customer;
@@ -158,6 +159,16 @@ const CustomerCard = ({ customer, payments, onUpdate, onDelete }: CustomerCardPr
                       value={editForm.advance_amount}
                       onChange={(e) => setEditForm({ ...editForm, advance_amount: Number(e.target.value) })}
                     />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="work_completed"
+                      checked={Boolean(editForm.work_completed)}
+                      onCheckedChange={(checked: boolean) => setEditForm({ ...editForm, work_completed: checked })}
+                    />
+                    <Label htmlFor="work_completed" className="cursor-pointer">
+                      Work Completed
+                    </Label>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">

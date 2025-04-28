@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 
 const Dashboard = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [payments, setPayments] = useState<{ [key: string]: Payment[] }>({});
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
@@ -22,13 +22,13 @@ const Dashboard = () => {
         const customersData = await getCustomers();
         setCustomers(customersData);
         
-        // Fetch payments for each customer
-        const paymentsData: { [key: string]: Payment[] } = {};
-        for (const customer of customersData) {
-          const customerPayments = await getPayments(customer.id);
-          paymentsData[customer.id] = customerPayments;
-        }
-        setPayments(paymentsData);
+        // Fetch payments for all customers
+        const paymentsData = await Promise.all(
+          customersData.map(customer => getPayments(customer.id))
+        );
+        setPayments(paymentsData.flat());
+      } catch (error) {
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -37,12 +37,35 @@ const Dashboard = () => {
     fetchData();
   }, []);
   
-  const pendingPayments = customers.reduce((total, customer) => {
-    const customerPayments = payments[customer.id] || [];
-    const totalPaid = customerPayments.reduce((sum, payment) => sum + payment.amount, 0);
-    const pending = customer.work_amount - customer.advance_amount - totalPaid;
-    return total + (pending > 0 ? pending : 0);
-  }, 0);
+  const calculatePendingPayments = () => {
+    return customers.reduce((total, customer) => {
+      const customerPayments = payments
+        .filter(p => p.customer_id === customer.id)
+        .reduce((sum, payment) => sum + payment.amount, 0);
+      const pendingAmount = customer.work_amount - (customer.advance_amount + customerPayments);
+      return total + (pendingAmount > 0 ? pendingAmount : 0);
+    }, 0);
+  };
+
+  const calculateCompletedWorkPendingPayments = () => {
+    return customers.reduce((total, customer) => {
+      if (customer.work_completed) {
+        const customerPayments = payments
+          .filter(p => p.customer_id === customer.id)
+          .reduce((sum, payment) => sum + payment.amount, 0);
+        const pendingAmount = customer.work_amount - (customer.advance_amount + customerPayments);
+        return total + (pendingAmount > 0 ? pendingAmount : 0);
+      }
+      return total;
+    }, 0);
+  };
+  
+  const totalWorkValue = customers.reduce((total, customer) => 
+    total + customer.work_amount, 0
+  );
+  
+  const totalPendingPayments = calculatePendingPayments();
+  const completedWorkPendingPayments = calculateCompletedWorkPendingPayments();
   
   const filteredCustomers = customers.filter(customer => 
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -58,9 +81,16 @@ const Dashboard = () => {
 
   const handleCustomerDelete = (customerId: string) => {
     setCustomers(prev => prev.filter(c => c.id !== customerId));
-    delete payments[customerId];
-    setPayments({ ...payments });
+    setPayments(prev => prev.filter(p => p.customer_id !== customerId));
   };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-pulse text-muted-foreground">Loading customers...</div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col bg-background animate-fade-in">
@@ -82,7 +112,7 @@ const Dashboard = () => {
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="glass-card rounded-lg p-4 flex items-center gap-4">
             <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center">
               <Users className="h-6 w-6 text-blue-500" />
@@ -99,9 +129,7 @@ const Dashboard = () => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Work Value</p>
-              <p className="text-2xl font-bold">
-                ₹{customers.reduce((sum, c) => sum + c.work_amount, 0).toLocaleString()}
-              </p>
+              <p className="text-2xl font-bold">₹{totalWorkValue.toLocaleString()}</p>
             </div>
           </div>
           
@@ -110,8 +138,18 @@ const Dashboard = () => {
               <Clock className="h-6 w-6 text-amber-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Pending Payments</p>
-              <p className="text-2xl font-bold">₹{pendingPayments.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Total Pending</p>
+              <p className="text-2xl font-bold text-amber-500">₹{totalPendingPayments.toLocaleString()}</p>
+            </div>
+          </div>
+
+          <div className="glass-card rounded-lg p-4 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center">
+              <Clock className="h-6 w-6 text-red-500" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Completed Work Pending</p>
+              <p className="text-2xl font-bold text-red-500">₹{completedWorkPendingPayments.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -128,17 +166,13 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-pulse text-muted-foreground">Loading customers...</div>
-          </div>
-        ) : filteredCustomers.length > 0 ? (
+        {filteredCustomers.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCustomers.map((customer) => (
               <CustomerCard 
                 key={customer.id} 
                 customer={customer} 
-                payments={payments[customer.id] || []}
+                payments={payments.filter(p => p.customer_id === customer.id)}
                 onUpdate={handleCustomerUpdate}
                 onDelete={handleCustomerDelete}
               />

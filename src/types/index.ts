@@ -7,6 +7,7 @@ export interface Customer {
   location: string | null;
   work_amount: number;
   advance_amount: number;
+  work_completed: boolean;
   created_at: string;
   user_id?: string; // Added to match database schema
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Customer, Payment } from '@/types';
-import { addPayment, getCustomers, getPayments } from '@/lib/supabase';
+import { addPayment, getCustomers, getPayments, deletePayment } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -129,8 +129,13 @@ const PaymentTracking = () => {
   
   const handleDeletePayment = async (paymentId: string) => {
     try {
-      setPayments(prev => prev.filter(p => p.id !== paymentId));
-      toast.success('Payment deleted successfully');
+      const success = await deletePayment(paymentId);
+      if (success) {
+        setPayments(prev => prev.filter(p => p.id !== paymentId));
+        toast.success('Payment deleted successfully');
+      } else {
+        toast.error('Failed to delete payment');
+      }
     } catch (error) {
       console.error('Error deleting payment:', error);
       toast.error('An error occurred while deleting the payment');

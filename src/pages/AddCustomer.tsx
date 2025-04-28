@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { addCustomer } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { Checkbox } from "@/components/ui/checkbox";
 
 const AddCustomer = () => {
   const navigate = useNavigate();
@@ -18,12 +18,17 @@ const AddCustomer = () => {
     phone_number: '',
     location: '',
     work_amount: '',
-    advance_amount: ''
+    advance_amount: '',
+    work_completed: false
   });
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData(prev => ({ ...prev, work_completed: checked }));
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,7 +70,8 @@ const AddCustomer = () => {
         phone_number: formData.phone_number,
         location: formData.location,
         work_amount: workAmount,
-        advance_amount: advanceAmount
+        advance_amount: advanceAmount,
+        work_completed: formData.work_completed
       };
       
       const result = await addCustomer(customerData);
@@ -175,6 +181,17 @@ const AddCustomer = () => {
                     onChange={handleChange}
                     placeholder="Enter advance amount (if any)"
                   />
+                </div>
+                
+                <div className="space-y-2 md:col-span-2 flex items-center gap-2">
+                  <Checkbox
+                    id="work_completed"
+                    checked={formData.work_completed}
+                    onCheckedChange={handleCheckboxChange}
+                  />
+                  <Label htmlFor="work_completed" className="cursor-pointer">
+                    Work Completed
+                  </Label>
                 </div>
               </div>
               

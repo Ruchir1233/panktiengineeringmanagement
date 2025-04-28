@@ -13,7 +13,10 @@ export const getCustomers = async (): Promise<Customer[]> => {
     return [];
   }
   
-  return data as Customer[];
+  return data.map(customer => ({
+    ...customer,
+    work_completed: customer.work_completed || false
+  })) as Customer[];
 };
 
 export const addCustomer = async (customer: Omit<Customer, 'id' | 'created_at'>): Promise<Customer | null> => {
@@ -24,6 +27,7 @@ export const addCustomer = async (customer: Omit<Customer, 'id' | 'created_at'>)
     .from('customers')
     .insert([{
       ...customerData,
+      work_completed: customerData.work_completed || false,
       user_id: '00000000-0000-0000-0000-000000000000' // Set default user_id
     }])
     .select()
@@ -34,7 +38,10 @@ export const addCustomer = async (customer: Omit<Customer, 'id' | 'created_at'>)
     return null;
   }
   
-  return data as Customer;
+  return {
+    ...data,
+    work_completed: data.work_completed || false
+  } as Customer;
 };
 
 export const getPayments = async (customerId: string): Promise<Payment[]> => {
@@ -173,7 +180,8 @@ export const updateCustomer = async (customerId: string, customer: Partial<Custo
         phone_number: customer.phone_number,
         email: customer.email,
         work_amount: customer.work_amount,
-        advance_amount: customer.advance_amount
+        advance_amount: customer.advance_amount,
+        work_completed: customer.work_completed
       })
       .eq('id', customerId)
       .select()
@@ -184,7 +192,10 @@ export const updateCustomer = async (customerId: string, customer: Partial<Custo
       return null;
     }
 
-    return data as Customer;
+    return {
+      ...data,
+      work_completed: data.work_completed || false
+    } as Customer;
   } catch (error) {
     console.error('Error updating customer:', error);
     return null;
