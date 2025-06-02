@@ -27,6 +27,7 @@ const PaymentTracking = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [sortByBalanceDue, setSortByBalanceDue] = useState<'desc' | 'asc'>('desc');
   
   const [paymentForm, setPaymentForm] = useState({
     amount: '',
@@ -192,6 +193,11 @@ const PaymentTracking = () => {
         return 0;
       });
     }
+    if (sortByBalanceDue === 'desc') {
+      result = result.sort((a, b) => b.pendingAmount - a.pendingAmount);
+    } else {
+      result = result.sort((a, b) => a.pendingAmount - b.pendingAmount);
+    }
     return result;
   })();
   
@@ -339,7 +345,7 @@ const PaymentTracking = () => {
                   Add Payment
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[90vh] overflow-y-auto pb-32 sm:pb-8">
                 <DialogHeader>
                   <DialogTitle>Add New Payment</DialogTitle>
                 </DialogHeader>
@@ -417,6 +423,15 @@ const PaymentTracking = () => {
               </DialogContent>
             </Dialog>
           </div>
+        </div>
+        
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setSortByBalanceDue(sortByBalanceDue === 'desc' ? 'asc' : 'desc')}
+          >
+            Sort by Balance Due: {sortByBalanceDue === 'desc' ? 'High → Low' : 'Low → High'}
+          </Button>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
