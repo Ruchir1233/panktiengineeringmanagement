@@ -13,7 +13,8 @@ const Dashboard = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | undefined>(undefined);
+  const [sortByBalanceDue, setSortByBalanceDue] = useState<'desc' | 'asc' | undefined>(undefined);
   const navigate = useNavigate();
   const customerRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
@@ -103,12 +104,10 @@ const Dashboard = () => {
     } else if (filter === 'completed') {
       result = result.filter(c => c.pendingAmount === 0);
     }
-    if (filter === 'all') {
-      result = result.sort((a, b) => {
-        if (a.pendingAmount === 0 && b.pendingAmount > 0) return 1;
-        if (a.pendingAmount > 0 && b.pendingAmount === 0) return -1;
-        return 0;
-      });
+    if (sortByBalanceDue === 'desc') {
+      result = result.sort((a, b) => b.pendingAmount - a.pendingAmount);
+    } else if (sortByBalanceDue === 'asc') {
+      result = result.sort((a, b) => a.pendingAmount - b.pendingAmount);
     }
     return result;
   })();
@@ -127,6 +126,18 @@ const Dashboard = () => {
   const handlePaymentsClick = (customerId: string) => {
     localStorage.setItem('dashboardLastViewedCustomerId', customerId);
     navigate(`/payment-tracking?customerId=${customerId}`);
+  };
+  
+  const getSortButtonLabel = () => {
+    if (!sortByBalanceDue) return 'Sort by Balance Due: None';
+    if (sortByBalanceDue === 'desc') return 'Sort by Balance Due: High → Low';
+    return 'Sort by Balance Due: Low → High';
+  };
+  
+  const handleSortToggle = () => {
+    if (!sortByBalanceDue) setSortByBalanceDue('desc');
+    else if (sortByBalanceDue === 'desc') setSortByBalanceDue('asc');
+    else setSortByBalanceDue(undefined);
   };
   
   if (isLoading) {
@@ -212,9 +223,15 @@ const Dashboard = () => {
         </div>
         
         <div className="mb-4 flex gap-2">
-          <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
+          <Button variant={!filter ? 'default' : 'outline'} onClick={() => setFilter(undefined)}>All</Button>
           <Button variant={filter === 'pending' ? 'default' : 'outline'} onClick={() => setFilter('pending')}>Pending</Button>
           <Button variant={filter === 'completed' ? 'default' : 'outline'} onClick={() => setFilter('completed')}>Completed</Button>
+          <Button
+            variant={sortByBalanceDue ? 'default' : 'outline'}
+            onClick={handleSortToggle}
+          >
+            {getSortButtonLabel()}
+          </Button>
         </div>
         
         {filteredAndSortedCustomers.length > 0 ? (
