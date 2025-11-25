@@ -8,6 +8,7 @@ export interface Customer {
   work_amount: number;
   advance_amount: number;
   work_completed: boolean;
+  referred_by?: string | null;
   created_at: string;
   user_id?: string; // Added to match database schema
 }

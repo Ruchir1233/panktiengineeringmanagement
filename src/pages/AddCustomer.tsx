@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { addCustomer } from '@/lib/supabase';
+import { addCustomer, getCustomers } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from "@/components/ui/checkbox";
 
 const AddCustomer = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customerSuggestions, setCustomerSuggestions] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -19,8 +20,17 @@ const AddCustomer = () => {
     location: '',
     work_amount: '',
     advance_amount: '',
-    work_completed: false
+    work_completed: false,
+    referred_by: ''
   });
+
+  useEffect(() => {
+    const loadCustomers = async () => {
+      const existing = await getCustomers();
+      setCustomerSuggestions(existing.map(customer => customer.name));
+    };
+    loadCustomers();
+  }, []);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -71,7 +81,8 @@ const AddCustomer = () => {
         location: formData.location,
         work_amount: workAmount,
         advance_amount: advanceAmount,
-        work_completed: formData.work_completed
+        work_completed: formData.work_completed,
+        referred_by: formData.referred_by ? formData.referred_by : null
       };
       
       const result = await addCustomer(customerData);
@@ -142,6 +153,28 @@ const AddCustomer = () => {
                     placeholder="Enter location"
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="referred_by">
+                    Reference
+                  </Label>
+                  <Input
+                    id="referred_by"
+                    name="referred_by"
+                    list="customer-reference-options"
+                    value={formData.referred_by}
+                    onChange={handleChange}
+                    placeholder="Select an existing customer or enter a custom reference"
+                  />
+                  <datalist id="customer-reference-options">
+                    {customerSuggestions.map((name) => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
+                  <p className="text-xs text-muted-foreground">
+                    Optional: choose from existing customers or type any custom reference.
+                  </p>
                 </div>
                 
                 <div className="space-y-2 md:col-span-2">

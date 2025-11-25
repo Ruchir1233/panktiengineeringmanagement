@@ -21,6 +21,8 @@ export type Database = {
           updated_at: string | null
           user_id: string
           work_amount: number
+          work_completed: boolean | null
+          referred_by: string | null
         }
         Insert: {
           address?: string | null
@@ -33,6 +35,8 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           work_amount?: number
+          work_completed?: boolean | null
+          referred_by?: string | null
         }
         Update: {
           address?: string | null
@@ -45,6 +49,8 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           work_amount?: number
+          work_completed?: boolean | null
+          referred_by?: string | null
         }
         Relationships: []
       }
