@@ -8,6 +8,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AddCustomer from "./pages/AddCustomer";
 import PaymentTracking from "./pages/PaymentTracking";
+import AddEmployee from "./pages/AddEmployee";
+import EmployeeAttendance from "./pages/EmployeeAttendance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
       <Route path="/payment-tracking" element={<ProtectedRoute><PaymentTracking /></ProtectedRoute>} />
+      <Route path="/add-employee" element={<ProtectedRoute><AddEmployee /></ProtectedRoute>} />
+      <Route path="/employee-attendance" element={<ProtectedRoute><EmployeeAttendance /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -43,7 +47,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter basename="/">
+        <BrowserRouter>
           <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>

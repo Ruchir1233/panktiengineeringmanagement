@@ -1,7 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Users, CreditCard, Home, LogOut, Menu, X, UserPlus } from 'lucide-react';
+import { Users, CreditCard, Home, LogOut, Menu, X, UserPlus, Calendar, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
@@ -25,6 +25,8 @@ const Navbar = () => {
     { label: 'Dashboard', path: '/dashboard', icon: Home },
     { label: 'Add Customer', path: '/add-customer', icon: UserPlus },
     { label: 'Customers', path: '/payment-tracking', icon: Users },
+    { label: 'Add Employee', path: '/add-employee', icon: Briefcase },
+    { label: 'Attendance', path: '/employee-attendance', icon: Calendar },
   ];
 
   return (
