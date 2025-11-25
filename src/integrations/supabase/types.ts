@@ -130,6 +130,47 @@ export type Database = {
           },
         ]
       }
+      employee_advances: {
+        Row: {
+          id: string
+          employee_id: string
+          amount: number
+          transaction_type: string
+          date: string
+          notes: string | null
+          created_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          employee_id: string
+          amount: number
+          transaction_type: string
+          date: string
+          notes?: string | null
+          created_at?: string | null
+          user_id?: string
+        }
+        Update: {
+          id?: string
+          employee_id?: string
+          amount?: number
+          transaction_type?: string
+          date?: string
+          notes?: string | null
+          created_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_advances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

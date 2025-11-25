@@ -151,11 +151,17 @@ const EmployeeAttendance = () => {
     [currentMonth, currentYear]
   );
 
-  const employeeAbsenceStats = useMemo(() => {
-    const stats: Record<string, number> = {};
+  const employeeMonthlyStats = useMemo(() => {
+    const stats: Record<string, { present: number; absents: number }> = {};
     attendance.forEach(record => {
+      const employeeId = record.employee_id;
+      if (!stats[employeeId]) {
+        stats[employeeId] = { present: 0, absents: 0 };
+      }
       if (record.attendance_type === 'absent') {
-        stats[record.employee_id] = (stats[record.employee_id] || 0) + 1;
+        stats[employeeId].absents += 1;
+      } else {
+        stats[employeeId].present += 1;
       }
     });
     return stats;
@@ -265,6 +271,7 @@ const EmployeeAttendance = () => {
                   ) : (
                     filteredEmployees.map(employee => {
                       const checked = selectedEmployees.has(employee.id);
+                      const stats = employeeMonthlyStats[employee.id] || { present: 0, absents: 0 };
                       return (
                         <div
                           key={employee.id}
@@ -296,10 +303,11 @@ const EmployeeAttendance = () => {
                               >
                                 {employee.name}{' '}
                                 <span className="text-xs text-muted-foreground">
-                                  ({Math.max(daysInMonth - (employeeAbsenceStats[employee.id] || 0), 0)}/{daysInMonth})
+                                  ({stats.present}/{daysInMonth})
                                 </span>
                               </label>
                               <p className="text-xs text-muted-foreground">{employee.phone_number}</p>
+                              <p className="text-[10px] text-muted-foreground">Absents: {stats.absents}</p>
                             </div>
                           </div>
                         </div>

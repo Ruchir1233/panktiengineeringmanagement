@@ -49,3 +49,14 @@ export interface Attendance {
   created_at: string;
   user_id?: string;
 }
+
+export interface EmployeeAdvance {
+  id: string;
+  employee_id: string;
+  amount: number;
+  transaction_type: string;
+  date: string;
+  notes?: string | null;
+  created_at: string;
+  user_id?: string;
+}

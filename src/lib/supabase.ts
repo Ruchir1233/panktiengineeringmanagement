@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Customer, Payment, Employee, Attendance } from '@/types';
+import { Customer, Payment, Employee, Attendance, EmployeeAdvance } from '@/types';
 
 // Helper functions for database operations
 export const getCustomers = async (): Promise<Customer[]> => {
@@ -451,5 +451,38 @@ export const deleteAttendance = async (attendanceId: string): Promise<boolean> =
     console.error('Error deleting attendance:', error);
     return false;
   }
+};
+
+// Employee advances functions
+export const getEmployeeAdvances = async (): Promise<EmployeeAdvance[]> => {
+  const { data, error } = await supabase
+    .from('employee_advances' as any)
+    .select('*')
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching employee advances:', error);
+    return [];
+  }
+
+  return (data || []) as unknown as EmployeeAdvance[];
+};
+
+export const addEmployeeAdvance = async (advance: Omit<EmployeeAdvance, 'id' | 'created_at'>): Promise<EmployeeAdvance | null> => {
+  const { data, error } = await supabase
+    .from('employee_advances' as any)
+    .insert([{
+      ...advance,
+      user_id: '00000000-0000-0000-0000-000000000000'
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error recording advance:', error);
+    return null;
+  }
+
+  return data as unknown as EmployeeAdvance;
 };
 

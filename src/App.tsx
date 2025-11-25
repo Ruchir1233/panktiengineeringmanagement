@@ -10,6 +10,7 @@ import AddCustomer from "./pages/AddCustomer";
 import PaymentTracking from "./pages/PaymentTracking";
 import AddEmployee from "./pages/AddEmployee";
 import EmployeeAttendance from "./pages/EmployeeAttendance";
+import EmployeeAdvances from "./pages/EmployeeAdvances";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const AppRoutes = () => {
       <Route path="/payment-tracking" element={<ProtectedRoute><PaymentTracking /></ProtectedRoute>} />
       <Route path="/add-employee" element={<ProtectedRoute><AddEmployee /></ProtectedRoute>} />
       <Route path="/employee-attendance" element={<ProtectedRoute><EmployeeAttendance /></ProtectedRoute>} />
+      <Route path="/employee-advances" element={<ProtectedRoute><EmployeeAdvances /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
