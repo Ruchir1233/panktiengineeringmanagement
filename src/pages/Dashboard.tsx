@@ -8,13 +8,38 @@ import { PlusCircle, Users, DollarSign, Clock, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 
+type FilterValue = 'all' | 'pending' | 'completed' | undefined;
+type SortValue = 'desc' | 'asc' | undefined;
+
+const VIEW_STATE_KEY = 'dashboardViewState';
+
+// Restore the Dashboard view (search, filter, sort) so it survives
+// navigating to the Payments page and coming back.
+const loadViewState = (): { searchTerm: string; filter: FilterValue; sortByBalanceDue: SortValue } => {
+  try {
+    const raw = sessionStorage.getItem(VIEW_STATE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        searchTerm: typeof parsed.searchTerm === 'string' ? parsed.searchTerm : '',
+        filter: ['all', 'pending', 'completed'].includes(parsed.filter) ? parsed.filter : undefined,
+        sortByBalanceDue: ['asc', 'desc'].includes(parsed.sortByBalanceDue) ? parsed.sortByBalanceDue : undefined,
+      };
+    }
+  } catch {
+    // ignore corrupt or unavailable storage
+  }
+  return { searchTerm: '', filter: undefined, sortByBalanceDue: undefined };
+};
+
 const Dashboard = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | undefined>(undefined);
-  const [sortByBalanceDue, setSortByBalanceDue] = useState<'desc' | 'asc' | undefined>(undefined);
+  const [initialView] = useState(loadViewState);
+  const [searchTerm, setSearchTerm] = useState(initialView.searchTerm);
+  const [filter, setFilter] = useState<FilterValue>(initialView.filter);
+  const [sortByBalanceDue, setSortByBalanceDue] = useState<SortValue>(initialView.sortByBalanceDue);
   const navigate = useNavigate();
   const customerRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
@@ -40,6 +65,14 @@ const Dashboard = () => {
     fetchData();
   }, []);
   
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify({ searchTerm, filter, sortByBalanceDue }));
+    } catch {
+      // ignore unavailable storage
+    }
+  }, [searchTerm, filter, sortByBalanceDue]);
+
   useEffect(() => {
     if (!isLoading && customers.length > 0) {
       const lastId = localStorage.getItem('dashboardLastViewedCustomerId');
